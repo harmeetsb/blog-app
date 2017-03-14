@@ -1,6 +1,6 @@
 .DS_Store
 /vendor
 /node_modules
-/model
+/models
 /public/storage
 .env
