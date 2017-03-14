@@ -1,9 +1,13 @@
 var mongoose = require("mongoose");
 
 var blogSchema = new mongoose.Schema({
-    name: String,
+    title: String,
     image: String,
-    description: String
+    body: String,
+    created: {
+        type: Date, 
+        default: Date.now
+    }
 });
 
 module.exports = mongoose.model("Blog", blogSchema);

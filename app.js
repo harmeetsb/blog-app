@@ -13,6 +13,8 @@ app.set("view engine", "ejs");
 // middleware to handle post requests
 app.use(bodyParser.urlencoded({extended: true}));
 
+// so we can use our public style sheet
+app.use(express.static("public"));
 // Landing page route
 app.get("/", function(req, res){
     res.render("landing");
@@ -46,11 +48,17 @@ app.get("/blogs/:id", function(req,res){
     });
 });
 
+// edit route
+app.get("/blogs/:id/edit", function(req, res){
+
+});
+
 app.post("/blogs", function(req, res){
     //get data from form and add to blogs array
-    var name = req.body.name;
+    var title = req.body.title;
     var image = req.body.image;
-    var newBlog = {name: name, image: image};
+    var body = req.body.body;
+    var newBlog = {title: title, image: image, body: body};
     // persisting in database
     var toInsert = new Blog(newBlog);
     toInsert.save(function(err, addedBlog){
