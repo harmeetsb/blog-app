@@ -1,77 +1,62 @@
-var express         = require("express"),
-    mongoose        = require("mongoose"),
-    app             = express(),
-    bodyParser      = require("body-parser");
-    Blog            = require("./models/blog");
+var express                 = require("express"),
+    mongoose                = require("mongoose"),
+    bodyParser              = require("body-parser"),
+    methodOverride          = require("method-override"),
+    Blog                    = require("./models/blog"),
+    Comment                = require("./models/comment"),
+    seedDB                  = require("./seeds"),
+    passport                = require("passport"),
+    LocalStrategy           = require("passport-local"),
+    passportLocalMongoose   = require("passport-local-mongoose"),
+    User                    = require("./models/user");
 
+var commentRoutes = require("./routes/comments"),
+    blogRoutes    = require("./routes/blogs"),
+    authRoutes    = require("./routes/auth");
+
+    //seedDB();
+var app = express();
 // connect to the database
 mongoose.connect("mongodb://localhost/blog");
 
+app.use(require("express-session")({
+    secret: "Secret key",
+    resave: false,
+    saveUninitialized: false
+}));
 // won't have to use the extension ejs when rendering the page
 app.set("view engine", "ejs");
 
 // middleware to handle post requests
 app.use(bodyParser.urlencoded({extended: true}));
 
+// serve the public directory..for using stylesheet __dirname gives current directory
+app.use(express.static(__dirname +"/public"));
 // so we can use our public style sheet
-app.use(express.static("public"));
-// Landing page route
-app.get("/", function(req, res){
-    res.render("landing");
+//app.use(express.static("public"));
+
+// to support PUT and DELETE request with HTML
+app.use(methodOverride("_method"));
+
+// passport related stuff
+app.use(passport.initialize());
+app.use(passport.session());
+
+passport.use(new LocalStrategy(User.authenticate()));
+// encoding and decoding message from the session.
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
+
+// middleware that runs for all the routes. (to show the user info)
+app.use(function(req, res, next){
+    res.locals.currentUser = req.user;
+    next();
 });
 
-// route for displaying the blogs
-app.get("/blogs", function(req, res){
-    // page to render and the data we want to pass through
-    //res.render("blogs", {blogs:blogs});
-    Blog.find({}, function(err, blogs) {
-        if(err) {
-            console.log("Error occured in getting data");
-        } else {
-            res.render("index", {blogs:blogs});
-        }
-    });
-});
-
-app.get("/blogs/new", function(req, res){
-    res.render("new");
-});
-
-// blog detail
-app.get("/blogs/:id", function(req,res){
-    Blog.findById(req.params.id, function(err, foundBlog){
-        if(err) {
-            console.log("Error in finding blog");
-        } else {
-            res.render("show_blog", {blog : foundBlog});
-        }
-    });
-});
-
-// edit route
-app.get("/blogs/:id/edit", function(req, res){
-
-});
-
-app.post("/blogs", function(req, res){
-    //get data from form and add to blogs array
-    var title = req.body.title;
-    var image = req.body.image;
-    var body = req.body.body;
-    var newBlog = {title: title, image: image, body: body};
-    // persisting in database
-    var toInsert = new Blog(newBlog);
-    toInsert.save(function(err, addedBlog){
-        if(err) {
-            console.log("error occured while adding blog to the database");
-        } else {
-            console.log("added to the database");
-            //redirect back to the blogs page
-            res.redirect("/blogs");
-        }
-    });
-
-});
+// user router
+app.use(authRoutes);
+app.use(blogRoutes);
+app.use(commentRoutes);
 
 app.listen(process.env.PORT | 3000, process.env.IP, function(){
     console.log("server has started");

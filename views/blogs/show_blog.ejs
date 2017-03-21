@@ -1,0 +1,61 @@
+<% include ../partials/header %>
+<div class="container">
+    <div class="row">
+        <div class="col-md-3">
+            <p class="lead">Blog </p>
+                <div class="list-group">
+                    <li class="list-group-item">Dummy List</li>
+                    <li class="list-group-item">Dummy List</li>
+                    <li class="list-group-item">Dummy List</li>
+                </div>
+        </div>
+        <div class="col-md-9">
+            <div class="thumbnail">
+                <img class="image-responsive" src="<%=blog.image%>">
+                <div class="caption-full">
+                    <h4><%= blog.title %></h4>
+                    <p> <%= blog.body %> </p>
+                    <p>
+                        <em>Submitted By <%= blog.author.username %></em>
+                    </p>
+                </div>
+            </div>
+            <div class="well">
+                <div class="text-right">
+                    <a class="btn btn-success" href="">Add a new Comment</a>
+                </div>
+                <% blog.comments.forEach(function(comment){  %>
+                 <div class="row">
+                     <div class="col-md-12">
+                        <strong><%= comment.author.username%></strong>
+                        <span class="pull-right">Today</span>
+                        <p>
+                            <%= comment.text %>
+                        </p>
+                    </div>
+                 </div>
+                 <% }) %>
+            </div>
+        </div>
+    </div>    
+
+    <a class = "btn btn-primary" href="/blogs/<%= blog._id %>/edit">Edit</a>
+    <form action="/blogs/<%= blog._id %>?_method=DELETE" method="POST">
+        <button class="btn btn-danger"> DELETE</button>
+    </form>
+
+    
+
+    <h1 style="text-align: center;">Add new Comment</h1>
+            <div style:"width: 30%; margin: 0 auto;">
+                <form action="/blogs/<%= blog._id%>/comments" method="POST">
+                <div class="form-group">
+                    <input class="form-control" type="text" name = "comment[text]" placeholder="Text">
+                </div>
+                <div class="form-group">
+                    <button class="btn btn-lg btn-default btn-block"> Submit </button>
+                </div>         
+                </form>
+            </div>
+</div>
+<% include ../partials/footer %>
